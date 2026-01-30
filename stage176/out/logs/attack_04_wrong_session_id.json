@@ -1,1 +1,0 @@
-{"stage":176,"attack":"attack_04_wrong_session_id","ts_utc":"2026-01-30T07:23:21Z","expected":"FAIL_CLOSED","observed":"FAIL_CLOSED_WRONG_SESSION_ID_REJECTED","ok":true,"client_rc":0,"artifacts":{"server_log":"out/logs/server167_attack04.log","client_log":"out/logs/client167_attack04.log"}}

@@ -1,6 +1,0 @@
-stage=176
-timestamp_utc=2026-01-30T07:23:19Z
-docker_version=
-compose_version=
-git_head=
-git_status=0 files_changed

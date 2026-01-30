@@ -1,16 +1,23 @@
 # macOS
 .DS_Store
+**/.DS_Store
+
+# Python
+__pycache__/
+**/__pycache__/
+*.pyc
 
 # runtime artifacts
 out/
+**/out/
 diagnostics/
 
-# PDFs or large local docs
+# local docs
 *.pdf
 
 # local stage snapshots (ignore all)
 stage*/
 
-# BUT keep the current stage we actively develop
+# keep the active stage
 !stage176/
 !stage176/**
