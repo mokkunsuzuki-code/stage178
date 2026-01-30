@@ -15,9 +15,8 @@ diagnostics/
 # local docs
 *.pdf
 
-# local stage snapshots (ignore all)
+# Ignore all stage snapshots by default
 stage*/
 
-# keep the active stage
+# Re-include the active stage directory itself (not everything under it)
 !stage176/
-!stage176/**
