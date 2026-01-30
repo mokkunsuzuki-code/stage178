@@ -20,3 +20,6 @@ stage*/
 
 # Re-include the active stage directory itself (not everything under it)
 !stage176/
+
+# garbled local folder
+"ギットハブリカバリーコード/"
