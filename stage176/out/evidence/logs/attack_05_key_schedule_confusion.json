@@ -1,0 +1,1 @@
+{"stage":176,"attack":"attack_05_key_schedule_confusion","ts_utc":"2026-01-30T07:21:59Z","expected":"FAIL_CLOSED","observed":"FAIL_CLOSED_BAD_ACK_HEADER_REJECTED","ok":true,"client_rc":0,"artifacts":{"server_log":"out/logs/server167_attack05.log","client_log":"out/logs/client167_attack05.log"}}

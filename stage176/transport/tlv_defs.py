@@ -1,0 +1,16 @@
+# MIT License © 2025 Motohiro Suzuki
+"""
+Stage160 TLV Registry (normative)
+"""
+
+# Header TLVs
+TLV_SESSION_ID = 0x0001
+TLV_EPOCH = 0x0002
+TLV_SEQ = 0x0003
+TLV_TIMESTAMP = 0x0004
+
+# Payload TLVs
+TLV_APP_DATA = 0x1000
+TLV_HANDSHAKE = 0x1001
+TLV_REKEY = 0x1002
+TLV_CLOSE = 0x1003

@@ -1,0 +1,46 @@
+[attack-01][debug] pwd=/app
+[attack-01][debug] python=Python 3.11.14
+[attack-01][debug] PYTHONPATH=/app
+[attack-01][debug] ls protocol?
+total 132
+drwxr-xr-x 3 root root  4096 Jan 29 02:39 .
+drwxr-xr-x 1 root root  4096 Jan 30 07:23 ..
+-rw-r--r-- 1 root root  6148 Jan 26 10:19 .DS_Store
+-rw-r--r-- 1 root root    38 Jan 26 10:19 __init__.py
+drwxr-xr-x 2 root root  4096 Jan 30 07:21 __pycache__
+-rw-r--r-- 1 root root  1544 Jan 26 10:19 config.py
+-rw-r--r-- 1 root root   554 Jan 26 10:19 errors.py
+-rw-r--r-- 1 root root  5365 Jan 26 10:19 failure.py
+-rw-r--r-- 1 root root 16385 Jan 26 10:19 handshake.py
+-rw-r--r-- 1 root root   385 Jan 26 10:19 handshake_types.py
+-rw-r--r-- 1 root root  5169 Jan 26 10:19 hs_tlv.py
+-rw-r--r-- 1 root root  3773 Jan 26 10:19 rekey.py
+-rw-r--r-- 1 root root 18011 Jan 29 02:38 rekey_engine.py
+-rw-r--r-- 1 root root  1055 Jan 26 10:19 result.py
+-rw-r--r-- 1 root root  5607 Jan 26 10:19 session.py
+-rw-r--r-- 1 root root  5210 Jan 26 10:19 stage167_a_core.py
+-rw-r--r-- 1 root root  4422 Jan 26 10:19 stage167_demo_runner.py
+-rw-r--r-- 1 root root  2748 Jan 26 10:19 stage167_force.py
+-rw-r--r-- 1 root root  2281 Jan 26 10:19 transcript.py
+[attack-01][debug] ls runners?
+total 64
+drwxr-xr-x 2 root root 4096 Jan 30 07:21 .
+drwxr-xr-x 1 root root 4096 Jan 30 07:23 ..
+-rw-r--r-- 1 root root 2699 Jan 30 03:28 run_client167.py
+-rw-r--r-- 1 root root 3869 Jan 29 01:09 run_client167_attack03.py
+-rw-r--r-- 1 root root 1875 Jan 30 03:43 run_client167_attack05.py
+-rw-r--r-- 1 root root 1624 Jan 30 03:57 run_client167_attack06.py
+-rw-r--r-- 1 root root 6059 Jan 28 02:46 run_server167.py
+-rw-r--r-- 1 root root 5539 Jan 29 01:09 run_server167_attack03.py
+-rw-r--r-- 1 root root 4438 Jan 29 02:29 run_server167_attack04.py
+-rw-r--r-- 1 root root 5027 Jan 30 03:42 run_server167_attack05.py
+-rw-r--r-- 1 root root 5176 Jan 30 03:58 run_server167_attack06.py
+[server167] listening on ('127.0.0.1', 9000)
+[server167] handshake OK
+session_id=15336723174997776137
+epoch=1
+[stage167-a] qkd_failover_decision used_qkd=True reason=OK qber=0.01 remaining_budget_bytes=1024 qkd_len=32
+[server167] [rekey] send INIT new_epoch=2 qkd_len=32 used_qkd=True reason=OK
+[server167] [rekey] PRE-COMMIT ok (derived next_key) -> waiting ACK
+[server167] rekey FAILED
+error = RuntimeError: ack confirm mismatch

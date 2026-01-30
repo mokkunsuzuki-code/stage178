@@ -1,0 +1,7 @@
+[client167] handshake OK
+session_id=2994852303601132099
+epoch=1
+[client167] [rekey] PRE-COMMIT ok new_epoch=2 qkd_len=32
+[client167] [rekey] sent ACK
+[client167] [rekey] COMMIT ok epoch=2 session_key_len=32
+[client167] [attack-03] sent ROLLBACK ACK after commit (ack.new_epoch=1, current_epoch=2)

@@ -1,0 +1,10 @@
+[server167] listening on ('127.0.0.1', 9000)
+[server167] handshake OK
+session_id=8908426022437901308
+epoch=1
+[stage167-a] qkd_failover_decision used_qkd=True reason=OK qber=0.01 remaining_budget_bytes=1024 qkd_len=32
+[server167] [rekey] send INIT new_epoch=2 qkd_len=32 used_qkd=True reason=OK
+[server167] [rekey] PRE-COMMIT ok (derived next_key) -> waiting ACK
+[server167] PHASE CONFUSION DETECTED: expected=RekeyAck got=RekeyCommit
+[server167] rekey FAILED
+error = RuntimeError: PHASE CONFUSION

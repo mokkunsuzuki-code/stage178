@@ -1,12 +1,16 @@
 # macOS
 .DS_Store
 
-# installers / archives
-*.dmg
-*.zip
+# runtime artifacts
+out/
+diagnostics/
 
-# app bundles
-*.app/
-Visual Studio Code.app/
+# PDFs or large local docs
+*.pdf
 
+# local stage snapshots (ignore all)
+stage*/
 
+# BUT keep the current stage we actively develop
+!stage176/
+!stage176/**

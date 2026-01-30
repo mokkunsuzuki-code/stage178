@@ -1,0 +1,10 @@
+[server167] listening on ('127.0.0.1', 9000)
+[server167] handshake OK
+session_id=7986320003376335535
+epoch=1
+[stage167-a] qkd_failover_decision used_qkd=True reason=OK qber=0.01 remaining_budget_bytes=1024 qkd_len=32
+[server167] [rekey] send INIT new_epoch=2 qkd_len=32 used_qkd=True reason=OK
+[server167] [rekey] PRE-COMMIT ok (derived next_key) -> waiting ACK
+[server167] WRONG SESSION_ID DETECTED: phase=WAIT_ACK expected=7986320003376335535 got=7986320003376335536
+[server167] rekey FAILED
+error = RuntimeError: WRONG SESSION_ID

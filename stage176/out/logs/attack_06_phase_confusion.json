@@ -1,0 +1,1 @@
+{"stage":176,"attack":"attack_06_phase_confusion","ts_utc":"2026-01-30T07:23:22Z","expected":"FAIL_CLOSED","observed":"FAIL_CLOSED_PHASE_CONFUSION_REJECTED","ok":true,"client_rc":0,"artifacts":{"server_log":"out/logs/server167_attack06.log","client_log":"out/logs/client167_attack06.log"}}
