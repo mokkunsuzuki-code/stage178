@@ -1,200 +1,195 @@
-## Stage178-A: Claims ↔ Implementation Integrity (CI)
+# QSP – Stage178  
+Claims ↔ Implementation Integrity + Attack Coverage (CI-enforced)
 
-This repository enforces that the security claims table stays consistent with implementation and tests.
+MIT License © 2025 Motohiro Suzuki
 
-**CI guarantees**
-- `tools/check_claims_integrity.py` validates that every claim references existing files/anchors/tests.
-- `pytest` validates the minimal core contract (`qsp/minicore.py`) for fail-closed behaviors.
+---
 
-**How to verify locally**
+## Overview
+
+Stage178 establishes **research-grade security integrity** for QSP.
+
+This stage is not about adding new cryptography.
+It is about making security guarantees **non-drifting, executable, and continuously enforced**.
+
+Stage178 consists of two inseparable parts:
+
+- **Stage178-A**: Claims ↔ Implementation Integrity  
+- **Stage178-B**: Attack Coverage Completion (CI-enforced)
+
+Together, they ensure:
+
+> *What QSP claims to protect is exactly what the code enforces —  
+> and every defined attack class is demonstrably rejected.*
+
+---
+
+## Stage178-A — Claims ↔ Implementation Integrity
+
+### Goal
+
+Prevent silent drift between:
+
+- 📜 Security claims
+- 🧠 Implementation
+- 🧪 Tests
+
+If any of these diverge, **CI must fail**.
+
+---
+
+### What Stage178-A Introduces
+
+#### 1. Security Claims Table
+
+All security properties are explicitly listed in:
+
+claims/claims.yml
+
+
+Each claim references:
+- the exact implementation file
+- the enforcing rule or logic
+- at least one test exercising the claim
+
+---
+
+#### 2. Minimal Contract Core (`qsp/minicore.py`)
+
+`minicore.py` is intentionally **small, strict, and auditable**.
+
+It is **not a production protocol**.  
+It is a **contract oracle** used by CI to enforce claims.
+
+It encodes rules such as:
+
+- Handshake must complete before any APP_DATA
+- Session ID mismatch → fail-closed
+- Epoch monotonicity (no rollback / jump)
+- Rekey only allowed for epoch + 1
+- Key material must evolve across epochs
+- Downgrade attempts must be rejected
+
+---
+
+#### 3. Claims Integrity Checker
+
+CI executes:
+
 ```bash
 python tools/check_claims_integrity.py
-pytest -q tests
-If you break claim references or the minicore contract, CI must fail.
+CI fails if:
 
+a claim references a non-existent file
 
-✅ これで「主張（claims）と実装がズレたら落ちる」が一発で伝わり、Stage178 の価値が外に刺さります。
+a test is missing
 
----
+an anchor or rule is not implemented
 
-# 2) GitHub Actions のバッジを README に貼る（信用が上がる）
+This makes claim drift impossible without detection.
 
-README の一番上（タイトル直下）に貼ります。
+Stage178-B — Attack Coverage (CI-enforced)
+Goal
+Be able to state — with evidence:
 
-1. GitHub の Actions を開く  
-2. 対象ワークフロー（`stage178-ci`）を開く  
-3. 右上あたりの **…（3点） → Create status badge**  
-4. 出てきた Markdown を README に貼る
+“All defined attack classes are rejected by the implementation.”
 
-（※ここはあなたのリポジトリ設定/ワークフロー名でURLが変わるので、GitHubが生成するものを貼るのが最も確実）
+Attack Table
+All attack classes are explicitly listed in:
 
----
+attacks/attack_table.yml
+For each attack, CI requires:
 
-## ここまでやったらコミット
+a pytest test
 
-```bash
-git add README.md
-git commit -m "Stage178-A: document CI guarantees (claims integrity + minicore contract)"
-git push origin main
-すぐ進めたい場合
-README.md の現状をここに貼ってくれれば、あなたのREADME構成に合わせて
-「どこに・どういう見出しで・どの文章量が最強か」をこちらで完成形に整えて返します。
+a runnable scenario (runner.py)
 
-あなた:
-１７８ーA READMEを全てお願いします
-ChatGPT:
-了解です。
-**Stage178-A 用の README.md を「そのまま置き換え可能な完成形」**で出します。
-（研究用途／OSS評価／CI耐性をすべて意識した内容です）
+a one-command execution script (run.sh)
 
-README.md（完成版）
-# QSP – Stage178-A  
-**Claims ↔ Implementation Integrity (CI-enforced)**
+Missing any of these → CI FAILS.
 
-This stage establishes a *hard guarantee* that **security claims, implementation, and tests never diverge**.
+Attacks Covered (A-01 … A-06)
+ID	Attack Class
+A-01	Epoch skip / jump
+A-02	Rekey race (double rekey)
+A-03	Wrong session_id injection
+A-04	APP_DATA before handshake
+A-05	Rekey reuse / replay
+A-06	Downgrade attack (mode pinning)
+Downgrade Detection (A-06)
+Stage178-B introduces mode pinning:
 
-Stage178-A is not about adding new cryptography.  
-It is about proving — continuously — that *what we claim to protect* is exactly *what the code enforces*.
+Session mode is fixed at handshake
 
----
+Any attempt to change mode afterward
+→ fail-closed ("downgrade detected")
 
-## What Stage178-A Achieves
+This ensures downgrade resistance is enforced in code, not only documented.
 
-Stage178-A introduces **CI-enforced integrity** between:
-
-- 📜 **Security Claims Table** (`claims/claims.yml`)
-- 🧠 **Minimal reference implementation** (`qsp/minicore.py`)
-- 🧪 **Negative & positive tests** (`tests/`)
-- 🤖 **Automated CI verification** (GitHub Actions)
-
-If any of these fall out of sync, **CI must fail**.
-
----
-
-## Core Guarantees (What CI Enforces)
-
-### 1. Claims Integrity
-Every security claim must reference:
-- an existing implementation file
-- a valid anchor or rule
-- at least one test that exercises the claim
-
-Checked by:
-```bash
-python tools/check_claims_integrity.py
-If a claim references a non-existent file, anchor, or test → CI FAILS.
-
-2. Minimal Core Contract (qsp/minicore.py)
-minicore.py is intentionally small, strict, and auditable.
-
-It enforces the control-plane security rules that back the claims:
-
-A1 – Handshake Gating
-
-No APP_DATA or REKEY before handshake completion
-
-A3 – Fail-Closed Semantics
-
-Session ID mismatch → immediate close
-
-Epoch mismatch → immediate close
-
-A4 – Rekey Discipline
-
-Rekey allowed only for epoch + 1
-
-Key material must change across epochs
-
-This file is not a production protocol.
-It is a contract oracle for CI.
-
-3. Test Suite (Behavioral Proof)
-Tests are written to break the protocol on purpose:
-
-wrong session ID
-
-epoch rollback / jump
-
-rekey reuse
-
-data before handshake
-
-If any unsafe behavior is accepted → CI FAILS.
-
-Run locally:
-
-pytest -q tests
-Repository Layout (Stage178-A)
-stage178/
-├── claims/
-│   └── claims.yml              # Security Claims Table
-├── qsp/
-│   └── minicore.py             # Minimal claim-backed core
-├── tests/
-│   ├── test_handshake_success.py
-│   ├── test_reject_appdata_before_handshake.py
-│   ├── test_close_on_wrong_session_id.py
-│   ├── test_close_on_epoch_mismatch.py
-│   ├── test_rekey_happy_path.py
-│   └── test_rekey_reuse_detected.py
-├── tools/
-│   └── check_claims_integrity.py
-├── .gitignore
-└── README.md
-How CI Protects the Project
-CI executes the following in order:
-
-Claims Integrity Check
+Continuous Enforcement via CI
+CI executes, in order:
 
 python tools/check_claims_integrity.py
-Behavioral Tests
+python tools/check_attack_coverage.py
+pytest -q
+This guarantees:
 
-pytest -q tests
-If any of these fail, the build is red.
+Claims cannot exist without enforcement
 
-This means:
+Attack coverage cannot be claimed without runnable proof
 
-You cannot “update the code” without updating the claims.
-You cannot “edit the claims” without updating the code or tests.
+Security regressions are caught immediately
 
-What This Stage Is (and Is Not)
-✔ This stage is
-A research-grade safety rail
-
-A proof that claims and code are synchronized
-
-A CI pattern reusable for other protocols
-
-✘ This stage is not
-A full protocol implementation
-
-A cryptographic performance benchmark
-
-A claim of post-quantum security completeness
-
-Why This Matters
-Most protocol projects fail not because crypto is broken,
-but because assumptions drift silently over time.
-
-Stage178-A makes drift impossible without CI noticing.
-
-This is the foundation required before:
-
-formal verification (Tamarin / ProVerif sync)
-
-attack coverage expansion
-
-external audits or PoC sharing
-
-How to Verify Locally
+Verify Locally
 git clone https://github.com/mokkunsuzuki-code/stage178.git
 cd stage178
 
 python tools/check_claims_integrity.py
-pytest -q tests
-Expected result:
+python tools/check_attack_coverage.py
+pytest -q
 
-[OK] claims integrity passed
-..........
+./attack_scenarios/attack_01_epoch_skip/run.sh
+./attack_scenarios/attack_02_rekey_race/run.sh
+./attack_scenarios/attack_03_wrong_session_id/run.sh
+./attack_scenarios/attack_04_appdata_before_handshake/run.sh
+./attack_scenarios/attack_05_rekey_reuse/run.sh
+./attack_scenarios/attack_06_downgrade/run.sh
+All commands must succeed.
+
+What Stage178 Is (and Is Not)
+✔ This stage is
+A CI-enforced security contract
+
+Proof that claims, code, and tests are synchronized
+
+A reusable pattern for protocol research and PoC review
+
+Suitable for research review and enterprise PoC discussion
+
+✘ This stage is not
+A performance benchmark
+
+A complete cryptographic implementation
+
+A claim of post-quantum completeness
+
+A replacement for formal verification
+
+Why This Matters
+Most protocol failures do not come from broken cryptography,
+but from assumptions drifting silently over time.
+
+Stage178 makes such drift structurally impossible.
+
+This stage forms the required foundation for:
+
+Stage179 — Formal verification (Tamarin / ProVerif) fully synchronized with claims
+
+External audits
+
+Enterprise PoCs
+
+Interoperability experiments
+
 License
 MIT License © 2025 Motohiro Suzuki
