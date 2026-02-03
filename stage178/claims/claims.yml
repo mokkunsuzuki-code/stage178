@@ -84,8 +84,8 @@ claims:
     file: model/qsp_state.spthy
     lemma: A4_rekey_requires_valid_state
   implementation:
-    file: qsp/rekey_engine.py
-    anchor: should_rekey(); refuse rekey if handshake incomplete or state invalid
+    file: qsp/minicore.py
+    anchor: MiniCore.accept_frame(); REKEY gating + epoch+1 rule
   tests:
     positive:
     - tests/test_rekey_happy_path.py

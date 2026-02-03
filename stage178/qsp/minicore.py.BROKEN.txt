@@ -1,0 +1,140 @@
+cd ~/Desktop/test/stage178
+
+cat > qsp/minicore.py <<'EOF'
+# MIT License © 2025 Motohiro Suzuki
+"""
+qsp/minicore.py  (Stage178-A minimal core)
+
+Implements minimal, testable behaviors for:
+- Claim A1: Handshake gating (no APP_DATA / REKEY before handshake complete)
+- Claim A3: Fail-closed on mismatch (wrong session_id or epoch mismatch => close)
+- Claim A4: REKEY gating + epoch+1 rule
+
+Frame schema accepted:
+  {"type": "...", "session_id": int, "epoch": int, "payload": bytes}
+Also accepts "frame_type" as alias for "type".
+"""
+
+from __future__ import annotations
+
+import hashlib
+from dataclasses import dataclass
+from typing import Any, Dict
+
+
+class ProtocolViolation(Exception):
+    """Raised when protocol rules are violated (fail-closed)."""
+
+
+def _u32(n: int) -> bytes:
+    if not isinstance(n, int):
+        raise ProtocolViolation(f"expected int, got {type(n).__name__}")
+    if n < 0 or n > 0xFFFFFFFF:
+        raise ProtocolViolation(f"int out of range for u32: {n}")
+    return n.to_bytes(4, "big")
+
+
+def _h(data: bytes) -> bytes:
+    return hashlib.sha256(data).digest()
+
+
+@dataclass
+class MiniResult:
+    ok: bool
+    detail: str
+    epoch: int
+    session_id: int
+    key_fingerprint_hex: str
+
+
+@dataclass
+class MiniSession:
+    session_id: int = 0
+    epoch: int = 0
+    handshake_complete: bool = False
+    closed: bool = False
+    key_material: bytes = b"stage178-minicore:init"
+
+    def fingerprint_hex(self) -> str:
+        return hashlib.sha256(self.key_material).hexdigest()
+
+    def close(self, reason: str) -> None:
+        self.closed = True
+        raise ProtocolViolation(reason)
+
+
+class MiniCore:
+    def __init__(self) -> None:
+        self.s = MiniSession()
+
+    def _get_type(self, frame: Dict[str, Any]) -> str:
+        ft = frame.get("type")
+        if ft is None:
+            ft = frame.get("frame_type")
+        if not isinstance(ft, str):
+            self.s.close(f"Missing/invalid frame type: {ft!r}")
+        return ft
+
+    def _get_int(self, frame: Dict[str, Any], key: str) -> int:
+        v = frame.get(key)
+        if not isinstance(v, int):
+            self.s.close(f"Missing/invalid {key}: {v!r}")
+        return v
+
+    def _get_payload(self, frame: Dict[str, Any]) -> bytes:
+        p = frame.get("payload", b"")
+        if p is None:
+            p = b""
+        if not isinstance(p, (bytes, bytearray)):
+            self.s.close(f"Invalid payload type: {type(p).__name__}")
+        return bytes(p)
+
+    def accept_frame(self, frame: Dict[str, Any]) -> MiniResult:
+        if self.s.closed:
+            self.s.close("Session already closed (fail-closed).")
+
+        if not isinstance(frame, dict):
+            self.s.close(f"Frame must be dict, got {type(frame).__name__}")
+
+        frame_type = self._get_type(frame)
+        sid = self._get_int(frame, "session_id")
+        epoch = self._get_int(frame, "epoch")
+        payload = self._get_payload(frame)
+
+        # HANDSHAKE_DONE: establishes session and epoch>=1
+        if frame_type == "HANDSHAKE_DONE":
+            if self.s.handshake_complete:
+                self.s.close("Handshake already complete; duplicate HANDSHAKE_DONE rejected.")
+            if epoch < 1:
+                self.s.close(f"Handshake epoch must be >= 1, got {epoch}")
+
+            self.s.session_id = sid
+            self.s.epoch = epoch
+            self.s.handshake_complete = True
+            self.s.key_material = _h(b"hs" + _u32(sid) + _u32(epoch) + payload)
+
+            return MiniResult(True, "handshake complete", self.s.epoch, self.s.session_id, self.s.fingerprint_hex())
+
+        # Post-handshake rules
+        if not self.s.handshake_complete:
+            self.s.close(f"{frame_type} rejected before handshake complete (A1 gating).")
+        if sid != self.s.session_id:
+            self.s.close(f"session_id mismatch: got {sid}, expected {self.s.session_id} (A3).")
+
+        # APP_DATA must use current epoch
+        if frame_type == "APP_DATA":
+            if epoch != self.s.epoch:
+                self.s.close(f"epoch mismatch: got {epoch}, expected {self.s.epoch} (A3).")
+            return MiniResult(True, "app_data accepted", self.s.epoch, self.s.session_id, self.s.fingerprint_hex())
+
+        # REKEY must be epoch == current + 1
+        if frame_type == "REKEY":
+            if epoch != self.s.epoch + 1:
+                self.s.close(f"rekey epoch must be current+1: got {epoch}, expected {self.s.epoch + 1} (A4).")
+            self.s.key_material = _h(b"rekey" + self.s.key_material + _u32(self.s.session_id) + _u32(epoch) + payload)
+            self.s.epoch = epoch
+            return MiniResult(True, "rekey accepted", self.s.epoch, self.s.session_id, self.s.fingerprint_hex())
+
+        self.s.close(f"Unknown frame_type rejected: {frame_type!r}")
+        raise AssertionError("unreachable")
+EOF

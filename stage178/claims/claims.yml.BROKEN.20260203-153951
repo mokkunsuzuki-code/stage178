@@ -1,0 +1,19 @@
+python - <<'PY'
+from pathlib import Path
+import yaml
+
+p = Path("claims/claims.yml")
+d = yaml.safe_load(p.read_text(encoding="utf-8"))
+
+for c in d["claims"]:
+    if c["id"] == "A4":
+        c["implementation"]["file"] = "qsp/minicore.py"
+        c["implementation"]["anchor"] = "MiniCore.accept_frame(); REKEY gating + epoch+1 rule"
+        # tests are already those filenames in your claims.yml想定だが、念のため揃える
+        c.setdefault("tests", {})
+        c["tests"]["positive"] = ["tests/test_rekey_happy_path.py"]
+        c["tests"]["negative"] = ["tests/test_rekey_rejected_before_handshake.py"]
+
+p.write_text(yaml.safe_dump(d, sort_keys=False, allow_unicode=True), encoding="utf-8")
+print("updated A4 -> qsp/minicore.py")
+PY
