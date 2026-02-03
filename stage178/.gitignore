@@ -1,0 +1,14 @@
+# MIT License © 2025 Motohiro Suzuki
+
+# Python
+__pycache__/
+*.pyc
+
+# pytest
+.pytest_cache/
+
+# backup / broken artifacts
+*.BROKEN.*
+
+# OS
+.DS_Store
