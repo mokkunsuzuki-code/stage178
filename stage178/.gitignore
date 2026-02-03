@@ -12,3 +12,6 @@ __pycache__/
 
 # OS
 .DS_Store
+
+# macOS
+.DS_Store

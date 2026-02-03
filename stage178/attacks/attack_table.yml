@@ -1,0 +1,74 @@
+version: "178-B"
+scope: "attack-coverage"
+attacks:
+  - attack_id: A-01
+    maps_to_claim: A4
+    category: epoch
+    threat: "epoch skip/jump"
+    setup: "handshake completed; epoch = N"
+    steps:
+      - "send REKEY with epoch = N+2"
+    expected_result: "CLOSE"
+    evidence_test: "tests/test_attack_epoch_skip.py::test_reject_epoch_jump"
+    evidence_script: "attack_scenarios/attack_01_epoch_skip/runner.py"
+    ci_required: true
+
+  - attack_id: A-02
+    maps_to_claim: A4
+    category: rekey
+    threat: "rekey race (double rekey)"
+    setup: "handshake completed; epoch = N"
+    steps:
+      - "send two concurrent REKEY requests for epoch = N+1"
+    expected_result: "one accepted OR close-on-race; never diverge keys"
+    evidence_test: "tests/test_attack_rekey_race.py::test_rekey_race_safe"
+    evidence_script: "attack_scenarios/attack_02_rekey_race/runner.py"
+    ci_required: true
+
+  - attack_id: A-03
+    maps_to_claim: A3
+    category: session
+    threat: "wrong session_id injection"
+    setup: "handshake completed; valid session_id known"
+    steps:
+      - "send APP_DATA with wrong session_id"
+    expected_result: "CLOSE"
+    evidence_test: "tests/test_attack_wrong_session_id.py::test_close_on_wrong_session_id"
+    evidence_script: "attack_scenarios/attack_03_wrong_session_id/runner.py"
+    ci_required: true
+
+  - attack_id: A-04
+    maps_to_claim: A1
+    category: phase
+    threat: "APP_DATA before handshake"
+    setup: "fresh connection; handshake not completed"
+    steps:
+      - "send APP_DATA"
+    expected_result: "REJECT or CLOSE"
+    evidence_test: "tests/test_attack_appdata_before_handshake.py::test_reject_appdata_before_handshake"
+    evidence_script: "attack_scenarios/attack_04_appdata_before_handshake/runner.py"
+    ci_required: true
+
+  - attack_id: A-05
+    maps_to_claim: A4
+    category: rekey
+    threat: "rekey reuse (same material / same transcript)"
+    setup: "epoch advanced once successfully"
+    steps:
+      - "replay previous REKEY transcript for same epoch"
+    expected_result: "CLOSE"
+    evidence_test: "tests/test_attack_rekey_reuse.py::test_rekey_reuse_detected"
+    evidence_script: "attack_scenarios/attack_05_rekey_reuse/runner.py"
+    ci_required: true
+
+  - attack_id: A-06
+    maps_to_claim: A4
+    category: downgrade
+    threat: "downgrade QKD-mix -> PQC-only masquerade"
+    setup: "claim requires QKD mix present (if enabled)"
+    steps:
+      - "forge provenance/flag to pretend QKD mixed when not"
+    expected_result: "CLOSE"
+    evidence_test: "tests/test_attack_downgrade_detected.py::test_downgrade_detected"
+    evidence_script: "attack_scenarios/attack_06_downgrade/runner.py"
+    ci_required: true
