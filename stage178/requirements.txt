@@ -1,3 +1,6 @@
 # MIT License © 2025 Motohiro Suzuki
 pytest>=8.0.0
 pyyaml>=6.0.0
+
+pyyaml
+pytest
