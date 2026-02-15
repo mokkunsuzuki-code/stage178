@@ -18,3 +18,10 @@ __pycache__/
 
 # macOS
 .DS_Store
+
+# build artifacts
+*.egg-info/
+dist/
+build/
+__pycache__/
+.pytest_cache/

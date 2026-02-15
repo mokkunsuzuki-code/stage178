@@ -1,5 +1,0 @@
-crypto
-keysources
-policy
-protocol
-qsp
